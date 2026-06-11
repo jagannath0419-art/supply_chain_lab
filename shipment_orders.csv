@@ -1,0 +1,8 @@
+order_id,destination_name,dest_x,dest_y,weight_kg,priority
+ORD-101,Andheri Retail Depot,5.2,12.4,450,High
+ORD-102,Bandra Outlet,2.1,6.8,850,Normal
+ORD-103,Panvel Distribution Point,32.1,-18.4,1200,High
+ORD-104,Kalyan Storehouse,40.5,30.2,300,Low
+ORD-105,Borivali Delivery Station,-4.8,31.2,950,Normal
+ORD-106,Mira Road Annex,-8.1,38.0,600,Low
+ORD-107,Chembur Warehouse,14.2,-2.5,1100,High

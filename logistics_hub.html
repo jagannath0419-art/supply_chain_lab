@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Optimization Control Room</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🚛</span>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight text-white">Supply Chain Optimization Lab</h1>
+                <p class="text-xs text-slate-400">Real-Time Routing & Fleet Dispatch Center</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/20 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Telemetry Pipeline Active
+        </div>
+    </header>
+
+    <main class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+        
+        <div class="space-y-6 lg:col-span-1">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Operational Performance Metrics</h2>
+                
+                <div class="space-y-4">
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <span class="text-xs text-slate-400 block font-medium">Active Fleet Dispatch Tracker</span>
+                        <div id="active-truck-id" class="text-2xl font-black text-indigo-400 mt-1">Awaiting Initialization...</div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <span class="text-xs text-slate-400 block font-medium">Accumulated Transportation Run Costs</span>
+                        <div class="text-2xl font-black text-amber-400 mt-1" id="running-cost">$0.00</div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <span class="text-xs text-slate-400 block font-medium">Current Fleet Vector Position</span>
+                        <div class="text-sm font-mono mt-2 flex justify-between text-slate-300">
+                            <span>Drop Station: <strong id="location-name" class="text-white">Main Hub</strong></span>
+                            <span>Grid: (<strong id="geo-coordinates" class="text-emerald-400">0.0, 0.0</strong>)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col h-[500px] lg:h-auto min-h-[450px]">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden shadow-xl">
+                <div class="px-5 py-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Live Logistics Operation Feeds</h2>
+                    <span class="text-xs font-mono text-slate-500">WebSocket Terminal</span>
+                </div>
+                
+                <div id="terminal-log-window" class="p-4 flex-1 overflow-y-auto font-mono text-xs space-y-2.5 custom-scrollbar bg-slate-950">
+                    <div class="text-slate-500">⏳ [System] Initializing web socket telemetry link layers...</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const logWindow = document.getElementById('terminal-log-window');
+        const truckIdDisplay = document.getElementById('active-truck-id');
+        const costDisplay = document.getElementById('running-cost');
+        const locDisplay = document.getElementById('location-name');
+        const geoDisplay = document.getElementById('geo-coordinates');
+
+        // Connect the WebSocket to our explicit independent logistics project port 8060 
+        const wsUrl = `ws://${window.location.host}/ws/fleet-stream`;
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            appendTerminalLog('SYSTEM', '🔌 Real-time supply chain telematics connection established successfully.', 'text-emerald-400');
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Update Dashboard Metrics Matrix Variables
+            truckIdDisplay.innerText = data.truck_id;
+            costDisplay.innerText = `$${data.accumulated_cost_usd.toFixed(2)}`;
+            locDisplay.innerText = data.location_name;
+            geoDisplay.innerText = `${data.x.toFixed(1)}, ${data.y.toFixed(1)}`;
+
+            // Choose text styling tags depending on the specific logistics optimization milestone type
+            let trackingColor = 'text-slate-300';
+            if (data.event === 'DISPATCHED') trackingColor = 'text-indigo-400 font-semibold';
+            if (data.event === 'DELIVERED') trackingColor = 'text-emerald-400';
+            if (data.event === 'RETURNED') trackingColor = 'text-amber-400 font-medium';
+
+            appendTerminalLog(data.event, data.log_message, trackingColor);
+        };
+
+        socket.onclose = () => {
+            appendTerminalLog('SYSTEM', '❌ Telemetry streaming bridge disconnected from host server.', 'text-rose-500 font-bold');
+        };
+
+        function appendTerminalLog(statusTag, message, textColorClass) {
+            const timestamp = new Date().toLocaleTimeString();
+            const newLogEntry = document.createElement('div');
+            newLogEntry.className = `flex gap-2 items-start leading-relaxed border-b border-slate-900/40 pb-1.5 ${textColorClass}`;
+            newLogEntry.innerHTML = `
+                <span class="text-slate-600 shrink-0">[${timestamp}]</span>
+                <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] tracking-wide font-bold uppercase shrink-0">${statusTag}</span>
+                <span>${message}</span>
+            `;
+            logWindow.appendChild(newLogEntry);
+            
+            // Instantly snap the layout container scroll bar to the bottom to handle new records
+            logWindow.scrollTop = logWindow.scrollHeight;
+        }
+    </script>
+</body>
+</html>
