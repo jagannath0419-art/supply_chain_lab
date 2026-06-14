@@ -1,7 +1,3 @@
-Intern Credentials :-
-
-Intern ID : CITS2769 , Name : Jagannath Sandip Ansurkar, Domain : Data Analytics.
-
 Project Name :- Supply Chain Optimization Lab
 
 Description: A logistics simulation and routing engine designed to optimize fleet tracking, warehouse distribution, and shipment delivery paths.
